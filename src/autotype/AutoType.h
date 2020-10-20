@@ -39,7 +39,7 @@ class AutoType : public QObject
 
 public:
     QStringList windowTitles();
-    bool registerGlobalShortcut(Qt::Key key, Qt::KeyboardModifiers modifiers);
+    bool registerGlobalShortcut(Qt::Key key, Qt::KeyboardModifiers modifiers, QString* error = nullptr);
     void unregisterGlobalShortcut();
     static bool checkSyntax(const QString& string);
     static bool checkHighRepetition(const QString& string);

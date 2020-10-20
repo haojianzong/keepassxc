@@ -207,33 +207,49 @@ bool NixUtils::triggerGlobalShortcut(uint keycode, uint modifiers)
     return false;
 }
 
-bool NixUtils::registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers)
+bool NixUtils::registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers, QString* error)
 {
-    int keycode = XKeysymToKeycode(dpy, qcharToNativeKeyCode(key));
-    uint nativeModifiers = qtToNativeModifiers(modifiers);
+    auto keycode = XKeysymToKeycode(dpy, qcharToNativeKeyCode(key));
+    auto modifierscode = qtToNativeModifiers(modifiers);
+
+    // Check if this key combo is registered to another shortcut
+    QHashIterator<QString, QSharedPointer<globalShortcut>> i(m_globalShortcuts);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value()->nativeKeyCode == keycode && i.value()->nativeModifiers == modifierscode && i.key() != name) {
+            if (error) {
+                *error = tr("Global shortcut already registered to %1").arg(i.key());
+            }
+            return false;
+        }
+    }
+
+    unregisterGlobalShortcut(name);
 
     x11ErrorOccurred = false;
     auto prevHandler = XSetErrorHandler(x11ErrorHandler);
 
-    XGrabKey(dpy, keycode, nativeModifiers, rootWindow, True, GrabModeAsync, GrabModeAsync);
-    XGrabKey(dpy, keycode, nativeModifiers | Mod2Mask, rootWindow, True, GrabModeAsync, GrabModeAsync);
-    XGrabKey(dpy, keycode, nativeModifiers | LockMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
-    XGrabKey(dpy, keycode, nativeModifiers | Mod2Mask | LockMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
+    XGrabKey(dpy, keycode, modifierscode, rootWindow, True, GrabModeAsync, GrabModeAsync);
+    XGrabKey(dpy, keycode, modifierscode | Mod2Mask, rootWindow, True, GrabModeAsync, GrabModeAsync);
+    XGrabKey(dpy, keycode, modifierscode | LockMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
+    XGrabKey(dpy, keycode, modifierscode | Mod2Mask | LockMask, rootWindow, True, GrabModeAsync, GrabModeAsync);
 
     XSync(dpy, False);
     XSetErrorHandler(prevHandler);
 
-    if (!x11ErrorOccurred) {
-        auto gs = QSharedPointer<globalShortcut>::create();
-        gs->nativeKeyCode = keycode;
-        gs->nativeModifiers = nativeModifiers;
-        m_globalShortcuts.insert(name, gs);
-        return true;
-    } else {
-        unregisterGlobalShortcut(name);
+    if (x11ErrorOccurred) {
         x11ErrorOccurred = false;
+        if (error) {
+            *error = tr("Could not register global shortcut");
+        }
         return false;
     }
+
+    auto gs = QSharedPointer<globalShortcut>::create();
+    gs->nativeKeyCode = keycode;
+    gs->nativeModifiers = modifierscode;
+    m_globalShortcuts.insert(name, gs);
+    return true;
 }
 
 bool NixUtils::unregisterGlobalShortcut(const QString& name)

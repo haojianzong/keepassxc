@@ -106,18 +106,39 @@ bool WinUtils::isHighContrastMode() const
     return (settings.value("Flags").toInt() & 1u) != 0;
 }
 
-bool WinUtils::registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers)
+bool WinUtils::registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers, QString* error)
 {
+    auto keycode = qtToNativeKeyCode(key);
+    auto modifierscode = qtToNativeModifiers(modifiers);
+    if (keycode < 1 || keycode > 254) {
+        if (error) {
+            *error = tr("Invalid key code");
+        }
+        return false;
+    }
+
+    // Check if this key combo is registered to another shortcut
+    QHashIterator<QString, QSharedPointer<globalShortcut>> i(m_globalShortcuts);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value()->nativeKeyCode == keycode && i.value()->nativeModifiers == modifierscode && i.key() != name) {
+            if (error) {
+                *error = tr("Global shortcut already registered to %1").arg(i.key());
+            }
+            return false;
+        }
+    }
+
     unregisterGlobalShortcut(name);
 
     auto gs = QSharedPointer<globalShortcut>::create();
     gs->id = m_nextShortcutId;
-    gs->nativeKeyCode = qtToNativeKeyCode(key);
-    if (gs->nativeKeyCode < 1 || gs->nativeKeyCode > 254) {
-        return false;
-    }
-    gs->nativeModifiers = qtToNativeModifiers(modifiers);
+    gs->nativeKeyCode = keycode;
+    gs->nativeModifiers = modifierscode;
     if (!::RegisterHotKey(nullptr, gs->id, gs->nativeModifiers | MOD_NOREPEAT, gs->nativeKeyCode)) {
+        if (error) {
+            *error = tr("Could not register global shortcut");
+        }
         return false;
     }
 

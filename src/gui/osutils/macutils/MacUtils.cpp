@@ -148,21 +148,43 @@ void MacUtils::registerNativeEventFilter()
     // Not implemented for now
 }
 
-bool MacUtils::registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers)
+bool MacUtils::registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers, QString* error)
 {
+    auto keycode = qtToNativeKeyCode(key);
+    auto modifierscode = qtToNativeModifiers(modifiers, false);
+    if (keycode == INVALID_KEYCODE) {
+        if (error) {
+            *error = tr("Invalid key code");
+        }
+        return false;
+    }
+
+    // Check if this key combo is registered to another shortcut
+    QHashIterator<QString, QSharedPointer<globalShortcut>> i(m_globalShortcuts);
+    while (i.hasNext()) {
+        i.next();
+        if (i.value()->nativeKeyCode == keycode && i.value()->nativeModifiers == modifierscode && i.key() != name) {
+            if (error) {
+                *error = tr("Global shortcut already registered to %1").arg(i.key());
+            }
+            return false;
+        }
+    }
+
+    // Remove existing registration for this name
     unregisterGlobalShortcut(name);
 
     auto gs = QSharedPointer<globalShortcut>::create();
     gs->hotkeyId.signature = 'kpxc';
     gs->hotkeyId.id = m_nextShortcutId;
-    gs->nativeKeyCode = qtToNativeKeyCode(key);
-    if (gs->nativeKeyCode == INVALID_KEYCODE) {
-        return false;
-    }
-    gs->nativeModifiers = qtToNativeModifiers(modifiers, false);
+    gs->nativeKeyCode = keycode;
+    gs->nativeModifiers = modifierscode;
     if (::RegisterEventHotKey(
             gs->nativeKeyCode, gs->nativeModifiers, gs->hotkeyId, GetApplicationEventTarget(), 0, &gs->hotkeyRef)
         != noErr) {
+        if (error) {
+            *error = tr("Could not register global shortcut");
+        }
         return false;
     }
 
@@ -192,7 +214,7 @@ OSStatus MacUtils::hotkeyHandler(EventHandlerCallRef nextHandler, EventRef theEv
     if (::GetEventParameter(
             theEvent, kEventParamDirectObject, typeEventHotKeyID, nullptr, sizeof(hotkeyId), nullptr, &hotkeyId)
         == noErr) {
-        QHashIterator<QString, QSharedPointer<globalShortcut>> i(self->m_globalShortcuts);
+        QHashIterator<QString, QSharedPointer<globalShortcut>> i(m_globalShortcuts);
         while (i.hasNext()) {
             i.next();
             if (i.value()->hotkeyId.id == hotkeyId.id) {

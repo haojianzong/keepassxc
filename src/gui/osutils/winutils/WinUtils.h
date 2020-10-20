@@ -42,7 +42,10 @@ public:
 
     void registerNativeEventFilter() override;
 
-    bool registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers) override;
+    bool registerGlobalShortcut(const QString& name,
+                                Qt::Key key,
+                                Qt::KeyboardModifiers modifiers,
+                                QString* error = nullptr) override;
     bool unregisterGlobalShortcut(const QString& name) override;
 
     DWORD qtToNativeKeyCode(Qt::Key key);

@@ -152,13 +152,13 @@ void AutoType::raiseWindow()
 #endif
 }
 
-bool AutoType::registerGlobalShortcut(Qt::Key key, Qt::KeyboardModifiers modifiers)
+bool AutoType::registerGlobalShortcut(Qt::Key key, Qt::KeyboardModifiers modifiers, QString* error)
 {
     if (!m_plugin) {
         return false;
     }
 
-    return osUtils->registerGlobalShortcut("autotype", key, modifiers);
+    return osUtils->registerGlobalShortcut("autotype", key, modifiers, error);
 }
 
 void AutoType::unregisterGlobalShortcut()

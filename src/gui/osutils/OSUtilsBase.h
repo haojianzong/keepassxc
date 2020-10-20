@@ -52,7 +52,10 @@ public:
 
     virtual void registerNativeEventFilter() = 0;
 
-    virtual bool registerGlobalShortcut(const QString& name, Qt::Key key, Qt::KeyboardModifiers modifiers) = 0;
+    virtual bool registerGlobalShortcut(const QString& name,
+                                        Qt::Key key,
+                                        Qt::KeyboardModifiers modifiers,
+                                        QString* error = nullptr) = 0;
     virtual bool unregisterGlobalShortcut(const QString& name) = 0;
 
 signals:
