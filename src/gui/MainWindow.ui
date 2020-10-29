@@ -331,6 +331,7 @@
     <addaction name="actionEntryMoveDown"/>
     <addaction name="separator"/>
     <addaction name="actionEntryCopyUsername"/>
+    <addaction name="selectNextItem"/>
     <addaction name="actionEntryCopyPassword"/>
     <addaction name="menuEntryCopyAttribute"/>
     <addaction name="menuEntryTotp"/>
@@ -423,6 +424,7 @@
    <addaction name="separator"/>
    <addaction name="actionEntryCopyUsername"/>
    <addaction name="actionEntryCopyPassword"/>
+   <addaction name="selectNextItem"/>
    <addaction name="actionEntryCopyURL"/>
    <addaction name="actionEntryAutoType"/>
    <addaction name="separator"/>
@@ -668,6 +670,17 @@
    </property>
    <property name="toolTip">
     <string>Copy password to clipboard</string>
+   </property>
+  </action>
+    <action name="selectNextItem">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Select &amp;Next Entry</string>
+   </property>
+   <property name="toolTip">
+    <string>Select next entry</string>
    </property>
   </action>
   <action name="actionSettings">

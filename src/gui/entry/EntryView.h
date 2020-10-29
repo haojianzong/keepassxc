@@ -42,6 +42,7 @@ public:
     int currentEntryIndex();
     bool inSearchMode();
     bool isSorted();
+    void moveDown();
     int numberOfSelectedEntries();
     void setFirstEntryActive();
     QByteArray viewState() const;

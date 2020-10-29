@@ -169,6 +169,7 @@ public slots:
     void moveEntryDown();
     void copyTitle();
     void copyUsername();
+    void moveDown();
     void copyPassword();
     void copyURL();
     void copyNotes();
