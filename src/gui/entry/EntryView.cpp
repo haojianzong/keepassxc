@@ -138,6 +138,12 @@ void EntryView::sortIndicatorChanged(int logicalIndex, Qt::SortOrder order)
     }
 }
 
+void EntryView::moveDown()
+{
+    QModelIndex index = m_sortModel->mapToSource(m_sortModel->index(currentIndex().row() + 1, 0));
+    setCurrentEntry(m_model->entryFromIndex(index));
+}
+
 void EntryView::keyPressEvent(QKeyEvent* event)
 {
     if ((event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) && currentIndex().isValid()) {

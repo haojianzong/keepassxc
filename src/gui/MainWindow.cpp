@@ -122,6 +122,7 @@ MainWindow::MainWindow()
 
     m_entryContextMenu = new QMenu(this);
     m_entryContextMenu->addAction(m_ui->actionEntryCopyUsername);
+    m_entryContextMenu->addAction(m_ui->selectNextItem);
     m_entryContextMenu->addAction(m_ui->actionEntryCopyPassword);
     m_entryContextMenu->addAction(m_ui->menuEntryCopyAttribute->menuAction());
     m_entryContextMenu->addAction(m_ui->menuEntryTotp->menuAction());
@@ -245,6 +246,8 @@ MainWindow::MainWindow()
     m_ui->actionLockDatabases->setShortcut(Qt::CTRL + Qt::Key_L);
     setShortcut(m_ui->actionQuit, QKeySequence::Quit, Qt::CTRL + Qt::Key_Q);
     setShortcut(m_ui->actionEntryNew, QKeySequence::New, Qt::CTRL + Qt::Key_N);
+
+    m_ui->selectNextItem->setShortcut(Qt::META + Qt::Key_N);
     m_ui->actionEntryEdit->setShortcut(Qt::CTRL + Qt::Key_E);
     m_ui->actionEntryDelete->setShortcut(Qt::CTRL + Qt::Key_D);
     m_ui->actionEntryDelete->setShortcut(Qt::Key_Delete);
@@ -282,6 +285,7 @@ MainWindow::MainWindow()
     m_ui->actionEntryMoveUp->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryMoveDown->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryCopyUsername->setShortcutVisibleInContextMenu(true);
+    m_ui->selectNextItem->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryCopyPassword->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryAutoType->setShortcutVisibleInContextMenu(true);
     m_ui->actionEntryOpenUrl->setShortcutVisibleInContextMenu(true);
@@ -367,6 +371,7 @@ MainWindow::MainWindow()
     m_ui->actionEntryMoveUp->setIcon(icons()->icon("move-up"));
     m_ui->actionEntryMoveDown->setIcon(icons()->icon("move-down"));
     m_ui->actionEntryCopyUsername->setIcon(icons()->icon("username-copy"));
+    m_ui->selectNextItem->setIcon(icons()->icon("username-copy"));
     m_ui->actionEntryCopyPassword->setIcon(icons()->icon("password-copy"));
     m_ui->actionEntryCopyURL->setIcon(icons()->icon("url-copy"));
     m_ui->actionEntryDownloadIcon->setIcon(icons()->icon("favicon-download"));
@@ -454,6 +459,7 @@ MainWindow::MainWindow()
     m_actionMultiplexer.connect(m_ui->actionEntryMoveUp, SIGNAL(triggered()), SLOT(moveEntryUp()));
     m_actionMultiplexer.connect(m_ui->actionEntryMoveDown, SIGNAL(triggered()), SLOT(moveEntryDown()));
     m_actionMultiplexer.connect(m_ui->actionEntryCopyUsername, SIGNAL(triggered()), SLOT(copyUsername()));
+    m_actionMultiplexer.connect(m_ui->selectNextItem, SIGNAL(triggered()), SLOT(moveDown()));
     m_actionMultiplexer.connect(m_ui->actionEntryCopyPassword, SIGNAL(triggered()), SLOT(copyPassword()));
     m_actionMultiplexer.connect(m_ui->actionEntryCopyURL, SIGNAL(triggered()), SLOT(copyURL()));
     m_actionMultiplexer.connect(m_ui->actionEntryCopyNotes, SIGNAL(triggered()), SLOT(copyNotes()));
@@ -753,6 +759,7 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
                                                   && entryIndex < numEntries - 1);
             m_ui->actionEntryCopyTitle->setEnabled(singleEntrySelected && dbWidget->currentEntryHasTitle());
             m_ui->actionEntryCopyUsername->setEnabled(singleEntrySelected && dbWidget->currentEntryHasUsername());
+            m_ui->selectNextItem->setEnabled(true);
             // NOTE: Copy password is enabled even if the selected entry's password is blank to prevent Ctrl+C
             // from copying information from the currently selected cell in the entry view table.
             m_ui->actionEntryCopyPassword->setEnabled(singleEntrySelected);
@@ -814,6 +821,7 @@ void MainWindow::setMenuActionState(DatabaseWidget::Mode mode)
             // Enable select actions when editing an entry
             bool editEntryActive = dbWidget->isEntryEditActive();
             const auto editEntryActionsMask = QList<QAction*>({m_ui->actionEntryCopyUsername,
+                                                               m_ui->selectNextItem,
                                                                m_ui->actionEntryCopyPassword,
                                                                m_ui->actionEntryCopyURL,
                                                                m_ui->actionEntryOpenUrl,

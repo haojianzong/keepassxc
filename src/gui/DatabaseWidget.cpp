@@ -1681,6 +1681,11 @@ int DatabaseWidget::currentEntryIndex() const
     return m_entryView->currentEntryIndex();
 }
 
+void DatabaseWidget::moveDown()
+{
+    m_entryView->moveDown();
+}
+
 QStringList DatabaseWidget::customEntryAttributes() const
 {
     Entry* entry = m_entryView->currentEntry();
